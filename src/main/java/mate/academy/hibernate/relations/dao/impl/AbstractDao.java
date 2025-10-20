@@ -25,7 +25,7 @@ public abstract class AbstractDao {
             if (transaction != null) {
                 transaction.rollback();
             }
-            throw new DataProcessingException("Can`t add object: " + t + "in DB");
+            throw new DataProcessingException("Can`t add object: " + t + "in DB", e);
         } finally {
             if (session != null) {
                 session.close();
@@ -35,18 +35,11 @@ public abstract class AbstractDao {
     }
 
     protected <T> Optional<T> get(Class<T> clazz,Long id) {
-        Session session = null;
-
-        try {
-            session = factory.openSession();
+        try (Session session = factory.openSession()) {
             return Optional.ofNullable(session.find(clazz, id));
         } catch (RuntimeException e) {
             throw new DataProcessingException("Can`t get object with class: "
-                    + clazz + " with id: " + id);
-        } finally {
-            if (session != null) {
-                session.close();
-            }
+                    + clazz + " with id: " + id, e);
         }
     }
 }
